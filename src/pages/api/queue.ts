@@ -1,21 +1,12 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { EnqueueOptions, Queue } from "@serverlessq/nextjs";
+import { Queue } from '@serverlessq/nextjs'
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const queueId = "7a7acfbe-a40a-4f0d-b897-64143448b43d";
-  const queue = new Queue(queueId);
+const doSomethingImportant = async () => {
+  return await (await fetch('https://mock.codes/200')).json()
 
-  console.log("All env variables are:", process.env);
 
-  const options: EnqueueOptions = {
-    method: "GET",
-    target: `https://${process.env.VERCEL_URL}/api/consumer`,
-  };
-
-  const response = await queue.enqueue(options);
-
-  res.status(200).json({ ...response });
-}
+// pages/api/queue
+export default Queue('vercel2', 'api/queue', async (req, res) => {
+  const result = await doSomethingImportant();
+  console.log('Queue Job', result);
+  res.send('finished')
+}, { retries: 1, urlToOverrideWhenRunningLocalhost: 'https://mock.codes/201'});
